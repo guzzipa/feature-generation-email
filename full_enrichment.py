@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
 """
-Full End-to-End Email Enrichment Pipeline (v3.0)
+Full End-to-End Email Enrichment Pipeline (v3.1)
 
 Combines:
 1. OSINT data collection (GitHub, Gravatar, HIBP)
 2. Commercial API enrichment (Hunter.io, EmailRep.io, Clearbit)
-3. Enhanced feature engineering (118+ features)
+3. Additional sources (WHOIS, IPQualityScore, Twitter, LinkedIn, StackOverflow)
+4. Enhanced feature engineering (202 features)
 
 Usage:
     python full_enrichment.py email@example.com
     python full_enrichment.py email@example.com --skip-commercial  # OSINT only
+    python full_enrichment.py email@example.com --skip-additional  # Skip WHOIS/IPQS/etc
     python full_enrichment.py email@example.com --output results/
 
 Author: Feature Generation Email
-Version: 3.0.0
+Version: 3.1.0
 """
 
 import sys
@@ -27,6 +29,7 @@ from datetime import datetime
 try:
     from osint_email_enrichment import EmailOSINT
     from commercial_apis import CommercialAPIsEnricher
+    from additional_sources import AdditionalSourcesEnricher
     from enhanced_feature_engineering import EnhancedFeatureEngineer
 except ImportError as e:
     print(f"❌ Import error: {e}")
@@ -46,25 +49,33 @@ class FullEnrichmentPipeline:
     Complete enrichment pipeline combining all data sources.
     """
 
-    VERSION = "3.0.0"
+    VERSION = "3.1.0"
 
-    def __init__(self, output_dir: str = "results", skip_commercial: bool = False):
+    def __init__(self, output_dir: str = "results", skip_commercial: bool = False, skip_additional: bool = False):
         """
         Initialize pipeline.
 
         Args:
             output_dir: Directory to save results
-            skip_commercial: Skip commercial APIs (OSINT only)
+            skip_commercial: Skip commercial APIs (Hunter, EmailRep, Clearbit)
+            skip_additional: Skip additional sources (WHOIS, IPQS, Twitter, etc)
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
         self.skip_commercial = skip_commercial
+        self.skip_additional = skip_additional
 
         if not skip_commercial:
             self.commercial = CommercialAPIsEnricher()
         else:
             self.commercial = None
             logger.warning("Commercial APIs disabled - will use OSINT data only")
+
+        if not skip_additional:
+            self.additional = AdditionalSourcesEnricher()
+        else:
+            self.additional = None
+            logger.warning("Additional sources disabled")
 
     def enrich_email(self, email: str) -> dict:
         """
@@ -79,22 +90,32 @@ class FullEnrichmentPipeline:
         logger.info(f"🚀 Starting full enrichment for: {email}")
 
         # Step 1: OSINT Data Collection
-        logger.info("📊 Step 1/3: Collecting OSINT data...")
+        logger.info("📊 Step 1/4: Collecting OSINT data...")
         osint_enricher = EmailOSINT(email)
         osint_data = osint_enricher.enrich()
 
         # Step 2: Commercial API Enrichment (optional)
         commercial_data = None
         if not self.skip_commercial and self.commercial:
-            logger.info("💼 Step 2/3: Enriching with commercial APIs...")
+            logger.info("💼 Step 2/4: Enriching with commercial APIs...")
             try:
                 commercial_data = self.commercial.enrich_email(email)
             except Exception as e:
                 logger.error(f"Commercial API error: {e}")
                 logger.warning("Continuing with OSINT data only")
 
-        # Step 3: Feature Engineering
-        logger.info("🔬 Step 3/3: Generating enhanced features...")
+        # Step 3: Additional Sources (optional)
+        additional_data = None
+        if not self.skip_additional and self.additional:
+            logger.info("🌐 Step 3/4: Enriching with additional sources...")
+            try:
+                additional_data = self.additional.enrich_email(email)
+            except Exception as e:
+                logger.error(f"Additional sources error: {e}")
+                logger.warning("Continuing without additional sources")
+
+        # Step 4: Feature Engineering
+        logger.info("🔬 Step 4/4: Generating enhanced features...")
         engineer = EnhancedFeatureEngineer(osint_data, commercial_data)
         features = engineer.generate_all_features()
         ml_ready = engineer.to_ml_ready()
@@ -107,19 +128,20 @@ class FullEnrichmentPipeline:
             'data_sources': {
                 'osint': osint_data,
                 'commercial': commercial_data if commercial_data else {},
+                'additional': additional_data if additional_data else {},
             },
             'features': {
                 'all_features': features.__dict__,
                 'ml_ready': ml_ready,
                 'feature_count': len(features.__dict__),
             },
-            'summary': self._generate_summary(features),
+            'summary': self._generate_summary(features, additional_data),
         }
 
         logger.info("✅ Enrichment completed successfully")
         return results
 
-    def _generate_summary(self, features) -> dict:
+    def _generate_summary(self, features, additional_data=None) -> dict:
         """Generate human-readable summary of key metrics."""
         summary = {
             'trust_score': features.overall_trust_score,
@@ -135,6 +157,15 @@ class FullEnrichmentPipeline:
             summary['emailrep_reputation'] = features.emailrep_reputation_score
             summary['clearbit_person_quality'] = features.clearbit_person_score
             summary['clearbit_company_quality'] = features.clearbit_company_score
+
+        # Add additional sources scores if available
+        if additional_data:
+            summary['domain_age_years'] = additional_data.get('domain_age_years')
+            summary['ipqs_fraud_score'] = additional_data.get('ipqs_fraud_score', 0)
+            summary['ipqs_overall_score'] = additional_data.get('ipqs_overall_score', 0)
+            summary['twitter_followers'] = additional_data.get('twitter_followers_count', 0)
+            summary['linkedin_profile_exists'] = additional_data.get('linkedin_profile_exists', False)
+            summary['stackoverflow_reputation'] = additional_data.get('stackoverflow_reputation', 0)
 
         # Risk classification
         trust = features.overall_trust_score
