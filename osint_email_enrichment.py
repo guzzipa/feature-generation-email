@@ -317,7 +317,8 @@ def main():
 
     # Guardar resultados
     from pathlib import Path
-    output_dir = Path.home()
+    output_dir = Path("results")
+    output_dir.mkdir(exist_ok=True)  # Crear carpeta si no existe
     output_file = output_dir / f"osint_results_{email.replace('@', '_at_')}.json"
     with open(output_file, 'w') as f:
         json.dump({
