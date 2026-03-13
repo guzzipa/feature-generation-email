@@ -116,7 +116,7 @@ class FullEnrichmentPipeline:
 
         # Step 4: Feature Engineering
         logger.info("🔬 Step 4/4: Generating enhanced features...")
-        engineer = EnhancedFeatureEngineer(osint_data, commercial_data)
+        engineer = EnhancedFeatureEngineer(osint_data, commercial_data, additional_data)
         features = engineer.generate_all_features()
         ml_ready = engineer.to_ml_ready()
 

@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
-Enhanced Feature Engineering with Commercial APIs
-Extends advanced features (78) with commercial API data (+40) = 118 total features
+Enhanced Feature Engineering with Commercial APIs + Additional Sources
+Extends advanced features (78) with commercial API data (+52) and additional sources (+72) = 202 total features
 
 Combines:
 - Public OSINT data (GitHub, Gravatar, HIBP)
 - Commercial APIs (Hunter.io, EmailRep.io, Clearbit)
+- Additional Sources (WHOIS, IPQualityScore, Twitter, LinkedIn, StackOverflow)
 
-Version: 3.0.0
+Version: 3.1.0
 """
 
 from typing import Dict, Any, Optional
@@ -20,8 +21,9 @@ from advanced_feature_engineering import AdvancedFeatureEngineer, AdvancedMLFeat
 @dataclass
 class EnhancedMLFeatures(AdvancedMLFeatures):
     """
-    Extended features including commercial API data.
-    Inherits all 78 features from AdvancedMLFeatures + adds ~40 more.
+    Extended features including commercial API data and additional sources.
+    Inherits all 78 features from AdvancedMLFeatures + adds 124 more (52 commercial + 72 additional).
+    Total: 202 features
     """
 
     # ========== HUNTER.IO FEATURES ==========
@@ -91,36 +93,122 @@ class EnhancedMLFeatures(AdvancedMLFeatures):
     email_consistency_score: float  # Consistency of email data across APIs
     identity_cross_validation_score: float  # Cross-API identity validation
 
+    # ========== WHOIS/DNS FEATURES (13) ==========
+    domain_age_days: Optional[int]  # Days since domain registration (CRITICAL for credit)
+    domain_age_years: Optional[float]  # Years since domain registration
+    domain_registrar: Optional[str]  # Domain registrar
+    domain_creation_date: Optional[str]  # Domain creation timestamp
+    domain_expiration_date: Optional[str]  # Domain expiration timestamp
+    domain_updated_date: Optional[str]  # Last domain update
+    domain_days_until_expiration: Optional[int]  # Days until expiration
+    domain_days_since_update: Optional[int]  # Days since last update
+    domain_dnssec_enabled: int  # DNSSEC security enabled
+    domain_privacy_protected: int  # WHOIS privacy protection
+    mx_records_count: int  # Number of MX records
+    spf_record_exists: int  # SPF email security
+    dmarc_record_exists: int  # DMARC email security
+
+    # ========== IPQUALITYSCORE FEATURES (20) ==========
+    ipqs_fraud_score: int  # 0-100 fraud probability
+    ipqs_valid: int  # Email is valid
+    ipqs_disposable: int  # Disposable email
+    ipqs_deliverability: str  # high/medium/low/unknown
+    ipqs_spam_trap: int  # Known spam trap
+    ipqs_honeypot: int  # Honeypot email
+    ipqs_frequent_complainer: int  # Frequent abuse reporter
+    ipqs_suspect: int  # Flagged as suspect
+    ipqs_leaked: int  # Credentials in leaks
+    ipqs_first_seen: Optional[str]  # First seen timestamp
+    ipqs_domain_age_days: Optional[int]  # Domain age from IPQS
+    ipqs_domain_velocity: str  # low/medium/high/none
+    ipqs_suspicious_tld: int  # Suspicious TLD
+    ipqs_recent_abuse: int  # Recent abuse reports
+    ipqs_overall_score: int  # 0-100 overall quality score
+    ipqs_suggested_domain: Optional[str]  # Typo suggestion
+    ipqs_catch_all: int  # Domain accepts all emails
+    ipqs_smtp_score: int  # SMTP validation score
+    ipqs_generic: int  # Generic/role email
+    ipqs_common: int  # Common/popular email
+
+    # ========== LINKEDIN FEATURES (15) ==========
+    linkedin_profile_exists: int  # Profile found
+    linkedin_connections_count: Optional[int]  # Number of connections
+    linkedin_endorsements: int  # Skill endorsements
+    linkedin_recommendations: int  # Recommendations received
+    linkedin_years_experience: Optional[float]  # Years of experience
+    linkedin_education_count: int  # Education entries
+    linkedin_has_profile_picture: int  # Has profile picture
+    linkedin_headline_professional: int  # Professional headline
+    current_company_from_linkedin: Optional[str]  # Current company
+    current_position_from_linkedin: Optional[str]  # Current position
+    linkedin_profile_completeness: float  # 0-1 profile completeness
+    linkedin_premium_account: int  # Premium subscription
+    linkedin_verified_profile: int  # Verified profile
+    days_since_linkedin_update: Optional[int]  # Days since last update
+    linkedin_activity_score: float  # 0-1 activity level
+
+    # ========== STACKOVERFLOW FEATURES (11) ==========
+    stackoverflow_profile: int  # Profile exists
+    stackoverflow_reputation: int  # Reputation score
+    stackoverflow_badges_gold: int  # Gold badges
+    stackoverflow_badges_silver: int  # Silver badges
+    stackoverflow_badges_bronze: int  # Bronze badges
+    stackoverflow_questions: int  # Questions asked
+    stackoverflow_answers: int  # Answers provided
+    stackoverflow_acceptance_rate: float  # Answer acceptance rate
+    stackoverflow_member_years: float  # Years as member
+    stackoverflow_top_tags: list  # Top skill tags
+    developer_credibility_score: float  # 0-1 developer credibility
+
+    # ========== TWITTER/X FEATURES (13) ==========
+    twitter_account_exists: int  # Account found
+    twitter_username: Optional[str]  # Twitter handle
+    twitter_followers_count: int  # Number of followers
+    twitter_following_count: int  # Number following
+    twitter_tweets_count: int  # Total tweets
+    twitter_account_age_days: int  # Account age in days
+    twitter_verified: int  # Verified account
+    twitter_bio_length: int  # Bio character count
+    twitter_has_profile_image: int  # Has profile image
+    twitter_engagement_rate: float  # Engagement rate
+    days_since_last_tweet: Optional[int]  # Days since last tweet
+    twitter_professional_keywords: int  # Professional keywords in bio
+    twitter_sentiment_score: float  # Sentiment analysis score
+
     # Version tracking
-    commercial_apis_version: str = "3.0.0"
+    commercial_apis_version: str = "3.1.0"
+    additional_sources_version: str = "3.1.0"
 
 
 class EnhancedFeatureEngineer(AdvancedFeatureEngineer):
     """
-    Enhanced feature engineering combining OSINT + Commercial APIs.
+    Enhanced feature engineering combining OSINT + Commercial APIs + Additional Sources.
 
     Usage:
         # First collect all data
         osint_data = run_osint_enrichment(email)
         commercial_data = run_commercial_enrichment(email)
+        additional_data = run_additional_enrichment(email)
 
         # Combine and engineer features
-        engineer = EnhancedFeatureEngineer(osint_data, commercial_data)
+        engineer = EnhancedFeatureEngineer(osint_data, commercial_data, additional_data)
         features = engineer.generate_all_features()
     """
 
-    FEATURE_VERSION = "3.0.0"
+    FEATURE_VERSION = "3.1.0"
 
-    def __init__(self, osint_data: Dict[str, Any], commercial_data: Optional[Dict[str, Any]] = None):
+    def __init__(self, osint_data: Dict[str, Any], commercial_data: Optional[Dict[str, Any]] = None, additional_data: Optional[Dict[str, Any]] = None):
         """
-        Initialize with both OSINT and commercial API data.
+        Initialize with OSINT, commercial API, and additional sources data.
 
         Args:
             osint_data: Output from osint_email_enrichment.py
             commercial_data: Output from commercial_apis.py (optional)
+            additional_data: Output from additional_sources.py (optional)
         """
         super().__init__(osint_data)
         self.commercial = commercial_data or {}
+        self.additional = additional_data or {}
 
     def _extract_hunter_features(self) -> Dict[str, Any]:
         """Extract features from Hunter.io data."""
@@ -259,6 +347,109 @@ class EnhancedFeatureEngineer(AdvancedFeatureEngineer):
             'clearbit_company_score': round(company_score, 3),
         }
 
+    def _extract_additional_features(self) -> Dict[str, Any]:
+        """Extract features from additional sources (WHOIS, IPQS, LinkedIn, SO, Twitter)."""
+        # WHOIS/DNS features (13)
+        whois_features = {
+            'domain_age_days': self.additional.get('domain_age_days'),
+            'domain_age_years': self.additional.get('domain_age_years'),
+            'domain_registrar': self.additional.get('domain_registrar'),
+            'domain_creation_date': self.additional.get('domain_creation_date'),
+            'domain_expiration_date': self.additional.get('domain_expiration_date'),
+            'domain_updated_date': self.additional.get('domain_updated_date'),
+            'domain_days_until_expiration': self.additional.get('domain_days_until_expiration'),
+            'domain_days_since_update': self.additional.get('domain_days_since_update'),
+            'domain_dnssec_enabled': 1 if self.additional.get('domain_dnssec_enabled') else 0,
+            'domain_privacy_protected': 1 if self.additional.get('domain_privacy_protected') else 0,
+            'mx_records_count': self.additional.get('mx_records_count', 0),
+            'spf_record_exists': 1 if self.additional.get('spf_record_exists') else 0,
+            'dmarc_record_exists': 1 if self.additional.get('dmarc_record_exists') else 0,
+        }
+
+        # IPQualityScore features (20)
+        ipqs_features = {
+            'ipqs_fraud_score': self.additional.get('ipqs_fraud_score', 0),
+            'ipqs_valid': 1 if self.additional.get('ipqs_valid') else 0,
+            'ipqs_disposable': 1 if self.additional.get('ipqs_disposable') else 0,
+            'ipqs_deliverability': self.additional.get('ipqs_deliverability', 'unknown'),
+            'ipqs_spam_trap': 1 if self.additional.get('ipqs_spam_trap') else 0,
+            'ipqs_honeypot': 1 if self.additional.get('ipqs_honeypot') else 0,
+            'ipqs_frequent_complainer': 1 if self.additional.get('ipqs_frequent_complainer') else 0,
+            'ipqs_suspect': 1 if self.additional.get('ipqs_suspect') else 0,
+            'ipqs_leaked': 1 if self.additional.get('ipqs_leaked') else 0,
+            'ipqs_first_seen': self.additional.get('ipqs_first_seen'),
+            'ipqs_domain_age_days': self.additional.get('ipqs_domain_age_days'),
+            'ipqs_domain_velocity': self.additional.get('ipqs_domain_velocity', 'none'),
+            'ipqs_suspicious_tld': 1 if self.additional.get('ipqs_suspicious_tld') else 0,
+            'ipqs_recent_abuse': 1 if self.additional.get('ipqs_recent_abuse') else 0,
+            'ipqs_overall_score': self.additional.get('ipqs_overall_score', 0),
+            'ipqs_suggested_domain': self.additional.get('ipqs_suggested_domain'),
+            'ipqs_catch_all': 1 if self.additional.get('ipqs_catch_all') else 0,
+            'ipqs_smtp_score': self.additional.get('ipqs_smtp_score', 0),
+            'ipqs_generic': 1 if self.additional.get('ipqs_generic') else 0,
+            'ipqs_common': 1 if self.additional.get('ipqs_common') else 0,
+        }
+
+        # LinkedIn features (15)
+        linkedin_features = {
+            'linkedin_profile_exists': 1 if self.additional.get('linkedin_profile_exists') else 0,
+            'linkedin_connections_count': self.additional.get('linkedin_connections_count'),
+            'linkedin_endorsements': self.additional.get('linkedin_endorsements', 0),
+            'linkedin_recommendations': self.additional.get('linkedin_recommendations', 0),
+            'linkedin_years_experience': self.additional.get('linkedin_years_experience'),
+            'linkedin_education_count': self.additional.get('linkedin_education_count', 0),
+            'linkedin_has_profile_picture': 1 if self.additional.get('linkedin_has_profile_picture') else 0,
+            'linkedin_headline_professional': 1 if self.additional.get('linkedin_headline_professional') else 0,
+            'current_company_from_linkedin': self.additional.get('current_company_from_linkedin'),
+            'current_position_from_linkedin': self.additional.get('current_position_from_linkedin'),
+            'linkedin_profile_completeness': self.additional.get('linkedin_profile_completeness', 0.0),
+            'linkedin_premium_account': 1 if self.additional.get('linkedin_premium_account') else 0,
+            'linkedin_verified_profile': 1 if self.additional.get('linkedin_verified_profile') else 0,
+            'days_since_linkedin_update': self.additional.get('days_since_linkedin_update'),
+            'linkedin_activity_score': self.additional.get('linkedin_activity_score', 0.0),
+        }
+
+        # StackOverflow features (11)
+        stackoverflow_features = {
+            'stackoverflow_profile': 1 if self.additional.get('stackoverflow_profile') else 0,
+            'stackoverflow_reputation': self.additional.get('stackoverflow_reputation', 0),
+            'stackoverflow_badges_gold': self.additional.get('stackoverflow_badges_gold', 0),
+            'stackoverflow_badges_silver': self.additional.get('stackoverflow_badges_silver', 0),
+            'stackoverflow_badges_bronze': self.additional.get('stackoverflow_badges_bronze', 0),
+            'stackoverflow_questions': self.additional.get('stackoverflow_questions', 0),
+            'stackoverflow_answers': self.additional.get('stackoverflow_answers', 0),
+            'stackoverflow_acceptance_rate': self.additional.get('stackoverflow_acceptance_rate', 0.0),
+            'stackoverflow_member_years': self.additional.get('stackoverflow_member_years', 0.0),
+            'stackoverflow_top_tags': self.additional.get('stackoverflow_top_tags', []),
+            'developer_credibility_score': self.additional.get('developer_credibility_score', 0.0),
+        }
+
+        # Twitter features (13)
+        twitter_features = {
+            'twitter_account_exists': 1 if self.additional.get('twitter_account_exists') else 0,
+            'twitter_username': self.additional.get('twitter_username'),
+            'twitter_followers_count': self.additional.get('twitter_followers_count', 0),
+            'twitter_following_count': self.additional.get('twitter_following_count', 0),
+            'twitter_tweets_count': self.additional.get('twitter_tweets_count', 0),
+            'twitter_account_age_days': self.additional.get('twitter_account_age_days', 0),
+            'twitter_verified': 1 if self.additional.get('twitter_verified') else 0,
+            'twitter_bio_length': self.additional.get('twitter_bio_length', 0),
+            'twitter_has_profile_image': 1 if self.additional.get('twitter_has_profile_image') else 0,
+            'twitter_engagement_rate': self.additional.get('twitter_engagement_rate', 0.0),
+            'days_since_last_tweet': self.additional.get('days_since_last_tweet'),
+            'twitter_professional_keywords': self.additional.get('twitter_professional_keywords', 0),
+            'twitter_sentiment_score': self.additional.get('twitter_sentiment_score', 0.0),
+        }
+
+        # Combine all additional features
+        return {
+            **whois_features,
+            **ipqs_features,
+            **linkedin_features,
+            **stackoverflow_features,
+            **twitter_features,
+        }
+
     def _calculate_cross_validation(self) -> Dict[str, Any]:
         """Cross-validate data across multiple sources."""
         # GitHub handle consistency
@@ -290,7 +481,7 @@ class EnhancedFeatureEngineer(AdvancedFeatureEngineer):
 
     def generate_all_features(self) -> EnhancedMLFeatures:
         """
-        Generate all 118+ features combining OSINT + Commercial APIs.
+        Generate all 202 features combining OSINT + Commercial APIs + Additional Sources.
 
         Returns:
             EnhancedMLFeatures dataclass with all features
@@ -305,6 +496,9 @@ class EnhancedFeatureEngineer(AdvancedFeatureEngineer):
         clearbit_features = self._extract_clearbit_features()
         cross_validation = self._calculate_cross_validation()
 
+        # Extract additional sources features
+        additional_features = self._extract_additional_features()
+
         # Combine all features
         all_features = {
             **base_dict,
@@ -312,7 +506,9 @@ class EnhancedFeatureEngineer(AdvancedFeatureEngineer):
             **emailrep_features,
             **clearbit_features,
             **cross_validation,
+            **additional_features,
             'commercial_apis_version': self.FEATURE_VERSION,
+            'additional_sources_version': self.FEATURE_VERSION,
             'feature_version': self.FEATURE_VERSION,  # Override parent version
         }
 

@@ -82,7 +82,9 @@ class WHOISAnalyzer:
 
             days_until_expiration = None
             if expiration_date:
-                days_until_expiration = (expiration_date - datetime.now()).days
+                # Handle timezone-aware/naive datetime comparison
+                exp_date = expiration_date.replace(tzinfo=None) if hasattr(expiration_date, 'tzinfo') and expiration_date.tzinfo else expiration_date
+                days_until_expiration = (exp_date - datetime.now()).days
 
             # Updated date
             updated_date = w.updated_date
@@ -91,7 +93,9 @@ class WHOISAnalyzer:
 
             days_since_update = None
             if updated_date:
-                days_since_update = (datetime.now() - updated_date).days
+                # Handle timezone-aware/naive datetime comparison
+                upd_date = updated_date.replace(tzinfo=None) if hasattr(updated_date, 'tzinfo') and updated_date.tzinfo else updated_date
+                days_since_update = (datetime.now() - upd_date).days
 
             features = {
                 'domain_age_days': age_days,
