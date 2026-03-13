@@ -316,7 +316,9 @@ def main():
     feature_vector = osint.generate_feature_vector()
 
     # Guardar resultados
-    output_file = f"/Users/pabloguzzi/osint_results_{email.replace('@', '_at_')}.json"
+    from pathlib import Path
+    output_dir = Path.home()
+    output_file = output_dir / f"osint_results_{email.replace('@', '_at_')}.json"
     with open(output_file, 'w') as f:
         json.dump({
             "full_data": full_data,

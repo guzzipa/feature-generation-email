@@ -1,0 +1,50 @@
+{
+  "full_data": {
+    "email": "example@company.com",
+    "enrichment_timestamp": "2026-03-13T10:30:00",
+    "validation": {
+      "is_valid_format": true,
+      "provider_type": "corporate",
+      "domain": "company.com",
+      "is_free_provider": false
+    },
+    "gravatar": {
+      "has_gravatar": true,
+      "avatar_url": "https://www.gravatar.com/avatar/...",
+      "display_name": "John Doe"
+    },
+    "github": {
+      "github_found": true,
+      "username": "johndoe",
+      "profile_url": "https://github.com/johndoe",
+      "public_repos": 42,
+      "followers": 150
+    },
+    "breach_check": {
+      "has_breaches": false,
+      "breach_count": 0
+    },
+    "domain_analysis": {
+      "domain": "company.com",
+      "is_disposable": false,
+      "likely_corporate": true
+    },
+    "enrichment_duration_seconds": 2.45
+  },
+  "feature_vector": {
+    "email_valid": 1,
+    "is_free_email": 0,
+    "is_corporate_email": 1,
+    "is_disposable_email": 0,
+    "has_gravatar": 1,
+    "has_github": 1,
+    "github_public_repos": 42,
+    "github_followers": 150,
+    "breach_count": 0,
+    "has_breaches": 0,
+    "online_presence_score": 0.87,
+    "trust_score": 0.95,
+    "enrichment_timestamp": "2026-03-13T10:30:00",
+    "provider_type": "corporate"
+  }
+}

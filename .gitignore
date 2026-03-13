@@ -26,9 +26,22 @@ wheels/
 .installed.cfg
 *.egg
 
-# Results and cache
+# Results and cache (IMPORTANT: protege datos personales)
 results/*.json
+*.json
+!examples/*.json
 *.log
+
+# Personal reports (no subir al repo)
+REPORTE_*.md
+*_personal_*.md
+
+# User-specific data
+osint_results_*.json
+*_at_*.json
+batch_results_*.json
+batch_summary_*.csv
+batch_errors_*.csv
 
 # IDE
 .vscode/
