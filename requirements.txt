@@ -4,8 +4,10 @@ python-dotenv>=1.0.0     # .env file management
 python-whois>=0.8.0      # WHOIS domain lookups
 dnspython>=2.4.0         # DNS record analysis
 
+# ========== Caching (v3.4 - Recommended for production) ==========
+redis>=5.0.0             # Redis caching layer
+
 # ========== Optional (Production) ==========
-# redis>=5.0.0           # Caching layer
 # celery>=5.3.0          # Async batch processing
 # pydantic>=2.0.0        # Data validation
 # pytest>=7.4.0          # Testing framework

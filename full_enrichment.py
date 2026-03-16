@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Full End-to-End Email Enrichment Pipeline (v3.2)
+Full End-to-End Email Enrichment Pipeline (v3.4)
 
 Combines:
 1. OSINT data collection (GitHub, Gravatar, HIBP)
@@ -8,6 +8,7 @@ Combines:
 3. Additional sources (WHOIS, IPQualityScore, Twitter, LinkedIn, StackOverflow)
 4. Free sources (IP Intel, Email Patterns, Username Search, Google Search)
 5. Enhanced feature engineering (250+ features)
+6. Redis caching layer (NEW in v3.4)
 
 Usage:
     python full_enrichment.py email@example.com
@@ -15,9 +16,11 @@ Usage:
     python full_enrichment.py email@example.com --skip-additional  # Skip WHOIS/IPQS/etc
     python full_enrichment.py email@example.com --ip 181.45.123.45  # With IP geolocation
     python full_enrichment.py email@example.com --output results/
+    python full_enrichment.py email@example.com --no-cache  # Disable cache
+    python full_enrichment.py email@example.com --force-refresh  # Bypass cache
 
 Author: Feature Generation Email
-Version: 3.2.0
+Version: 3.4.0
 """
 
 import sys
@@ -34,6 +37,7 @@ try:
     from additional_sources import AdditionalSourcesEnricher
     from free_sources import FreeSourcesEnricher
     from enhanced_feature_engineering import EnhancedFeatureEngineer
+    from cache_manager import get_cache_manager
 except ImportError as e:
     print(f"❌ Import error: {e}")
     print("Make sure you're running from the project root directory")
@@ -52,9 +56,17 @@ class FullEnrichmentPipeline:
     Complete enrichment pipeline combining all data sources.
     """
 
-    VERSION = "3.2.0"
+    VERSION = "3.4.0"
 
-    def __init__(self, output_dir: str = "results", skip_commercial: bool = False, skip_additional: bool = False, ip_address: str = None):
+    def __init__(
+        self,
+        output_dir: str = "results",
+        skip_commercial: bool = False,
+        skip_additional: bool = False,
+        ip_address: str = None,
+        enable_cache: bool = True,
+        force_refresh: bool = False
+    ):
         """
         Initialize pipeline.
 
@@ -63,12 +75,18 @@ class FullEnrichmentPipeline:
             skip_commercial: Skip commercial APIs (Hunter, EmailRep, Clearbit)
             skip_additional: Skip additional sources (WHOIS, IPQS, Twitter, etc)
             ip_address: Optional IP address for geolocation (free sources)
+            enable_cache: Enable Redis caching
+            force_refresh: Force refresh (bypass cache)
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
         self.skip_commercial = skip_commercial
         self.skip_additional = skip_additional
         self.ip_address = ip_address
+        self.force_refresh = force_refresh
+
+        # Initialize cache manager
+        self.cache = get_cache_manager(enabled=enable_cache and not force_refresh)
 
         if not skip_commercial:
             self.commercial = CommercialAPIsEnricher()
@@ -99,37 +117,56 @@ class FullEnrichmentPipeline:
 
         # Step 1: OSINT Data Collection
         logger.info("📊 Step 1/5: Collecting OSINT data...")
-        osint_enricher = EmailOSINT(email)
-        osint_data = osint_enricher.enrich()
+        osint_data = self.cache.get(email, 'osint')
+        if osint_data is None:
+            osint_enricher = EmailOSINT(email)
+            osint_data = osint_enricher.enrich()
+            self.cache.set(email, 'osint', osint_data)
+        else:
+            logger.info("   ⚡ Using cached OSINT data")
 
         # Step 2: Commercial API Enrichment (optional)
         commercial_data = None
         if not self.skip_commercial and self.commercial:
             logger.info("💼 Step 2/5: Enriching with commercial APIs...")
-            try:
-                commercial_data = self.commercial.enrich_email(email)
-            except Exception as e:
-                logger.error(f"Commercial API error: {e}")
-                logger.warning("Continuing with OSINT data only")
+            commercial_data = self.cache.get(email, 'commercial')
+            if commercial_data is None:
+                try:
+                    commercial_data = self.commercial.enrich_email(email)
+                    self.cache.set(email, 'commercial', commercial_data)
+                except Exception as e:
+                    logger.error(f"Commercial API error: {e}")
+                    logger.warning("Continuing with OSINT data only")
+            else:
+                logger.info("   ⚡ Using cached commercial data")
 
         # Step 3: Additional Sources (optional)
         additional_data = None
         if not self.skip_additional and self.additional:
             logger.info("🌐 Step 3/5: Enriching with additional sources...")
-            try:
-                additional_data = self.additional.enrich_email(email)
-            except Exception as e:
-                logger.error(f"Additional sources error: {e}")
-                logger.warning("Continuing without additional sources")
+            additional_data = self.cache.get(email, 'additional')
+            if additional_data is None:
+                try:
+                    additional_data = self.additional.enrich_email(email)
+                    self.cache.set(email, 'additional', additional_data)
+                except Exception as e:
+                    logger.error(f"Additional sources error: {e}")
+                    logger.warning("Continuing without additional sources")
+            else:
+                logger.info("   ⚡ Using cached additional data")
 
         # Step 4: Free Sources (always enabled - 100% free)
         logger.info("🆓 Step 4/5: Enriching with free sources...")
-        free_data = None
-        try:
-            free_data = self.free_sources.enrich_email(email, ip_address=self.ip_address)
-        except Exception as e:
-            logger.error(f"Free sources error: {e}")
-            logger.warning("Continuing without free sources")
+        free_data = self.cache.get(email, 'free')
+        if free_data is None:
+            try:
+                free_data = self.free_sources.enrich_email(email, ip_address=self.ip_address)
+                self.cache.set(email, 'free', free_data)
+            except Exception as e:
+                logger.error(f"Free sources error: {e}")
+                logger.warning("Continuing without free sources")
+        else:
+            logger.info("   ⚡ Using cached free sources data")
 
         # Step 5: Feature Engineering
         logger.info("🔬 Step 5/5: Generating enhanced features...")
@@ -303,6 +340,16 @@ def main():
         action='store_true',
         help='Suppress summary output'
     )
+    parser.add_argument(
+        '--no-cache',
+        action='store_true',
+        help='Disable caching'
+    )
+    parser.add_argument(
+        '--force-refresh',
+        action='store_true',
+        help='Force refresh (bypass cache)'
+    )
 
     args = parser.parse_args()
 
@@ -317,7 +364,9 @@ def main():
             output_dir=args.output,
             skip_commercial=args.skip_commercial,
             skip_additional=args.skip_additional,
-            ip_address=args.ip
+            ip_address=args.ip,
+            enable_cache=not args.no_cache,
+            force_refresh=args.force_refresh
         )
 
         results = pipeline.enrich_email(args.email)
