@@ -6,7 +6,7 @@
 
 Comprehensive email intelligence system that extracts 291+ structured features from email addresses using OSINT data, commercial APIs, and behavioral analysis. Turn an email into rich, actionable data for ML models.
 
-> ⚡ **v3.5**: 291 features from 11+ data sources with Redis caching + REST API service
+> ⚡ **v5.2**: 380+ features from 31+ data sources - 100% free options available
 
 ## 🎯 What It Does
 
@@ -666,6 +666,7 @@ python scheduler.py start
 - ✅ **v4.1**: Feature store integration (Feast)
 - ✅ **v4.2**: Interactive dashboard (Streamlit)
 - ✅ **v5.0**: Auto-improvement system (Living Project)
+- ✅ **v5.2**: Advanced free sources (HackerNews, Dev.to, NPM, PyPI, Blockchain, +20 sources)
 - 🔲 AI-powered code improvements (Claude Code integration)
 - 🔲 GraphQL API
 - 🔲 Webhooks for async notifications

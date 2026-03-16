@@ -254,22 +254,24 @@ class EnhancedFeatureEngineer(AdvancedFeatureEngineer):
         features = engineer.generate_all_features()
     """
 
-    FEATURE_VERSION = "3.2.0"
+    FEATURE_VERSION = "5.2.0"
 
-    def __init__(self, osint_data: Dict[str, Any], commercial_data: Optional[Dict[str, Any]] = None, additional_data: Optional[Dict[str, Any]] = None, free_data: Optional[Dict[str, Any]] = None):
+    def __init__(self, osint_data: Dict[str, Any], commercial_data: Optional[Dict[str, Any]] = None, additional_data: Optional[Dict[str, Any]] = None, free_data: Optional[Dict[str, Any]] = None, free_advanced_data: Optional[Dict[str, Any]] = None):
         """
-        Initialize with OSINT, commercial API, additional sources, and free sources data.
+        Initialize with OSINT, commercial API, additional sources, free sources, and advanced free sources data.
 
         Args:
             osint_data: Output from osint_email_enrichment.py
             commercial_data: Output from commercial_apis.py (optional)
             additional_data: Output from additional_sources.py (optional)
             free_data: Output from free_sources.py (optional)
+            free_advanced_data: Output from free_advanced_sources.py (optional) - NEW in v5.2
         """
         super().__init__(osint_data)
         self.commercial = commercial_data or {}
         self.additional = additional_data or {}
         self.free = free_data or {}
+        self.free_advanced = free_advanced_data or {}
 
     def _extract_hunter_features(self) -> Dict[str, Any]:
         """Extract features from Hunter.io data."""

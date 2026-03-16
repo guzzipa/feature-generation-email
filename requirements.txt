@@ -3,6 +3,7 @@ requests>=2.31.0         # HTTP requests for all APIs
 python-dotenv>=1.0.0     # .env file management
 python-whois>=0.8.0      # WHOIS domain lookups
 dnspython>=2.4.0         # DNS record analysis
+beautifulsoup4>=4.12.0   # HTML parsing for web scraping (v5.2)
 
 # ========== Caching (v3.4 - Recommended for production) ==========
 redis>=5.0.0             # Redis caching layer

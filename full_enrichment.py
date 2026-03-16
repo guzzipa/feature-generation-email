@@ -1,26 +1,28 @@
 #!/usr/bin/env python3
 """
-Full End-to-End Email Enrichment Pipeline (v3.4)
+Full End-to-End Email Enrichment Pipeline (v5.2)
 
 Combines:
 1. OSINT data collection (GitHub, Gravatar, HIBP)
 2. Commercial API enrichment (Hunter.io, EmailRep.io, Clearbit)
 3. Additional sources (WHOIS, IPQualityScore, Twitter, LinkedIn, StackOverflow)
 4. Free sources (IP Intel, Email Patterns, Username Search, Google Search)
-5. Enhanced feature engineering (250+ features)
-6. Redis caching layer (NEW in v3.4)
+5. Free advanced sources (HackerNews, Dev.to, NPM, PyPI, Reddit, Ethereum, etc) - NEW in v5.2
+6. Enhanced feature engineering (380+ features)
+7. Redis caching layer
 
 Usage:
     python full_enrichment.py email@example.com
     python full_enrichment.py email@example.com --skip-commercial  # OSINT + Free only
     python full_enrichment.py email@example.com --skip-additional  # Skip WHOIS/IPQS/etc
+    python full_enrichment.py email@example.com --skip-advanced    # Skip advanced free sources
     python full_enrichment.py email@example.com --ip 181.45.123.45  # With IP geolocation
     python full_enrichment.py email@example.com --output results/
     python full_enrichment.py email@example.com --no-cache  # Disable cache
     python full_enrichment.py email@example.com --force-refresh  # Bypass cache
 
 Author: Feature Generation Email
-Version: 3.4.0
+Version: 5.2.0
 """
 
 import sys
@@ -36,6 +38,7 @@ try:
     from commercial_apis import CommercialAPIsEnricher
     from additional_sources import AdditionalSourcesEnricher
     from free_sources import FreeSourcesEnricher
+    from free_advanced_sources import FreeAdvancedSources
     from enhanced_feature_engineering import EnhancedFeatureEngineer
     from cache_manager import get_cache_manager
 except ImportError as e:
@@ -56,13 +59,14 @@ class FullEnrichmentPipeline:
     Complete enrichment pipeline combining all data sources.
     """
 
-    VERSION = "3.4.0"
+    VERSION = "5.2.0"
 
     def __init__(
         self,
         output_dir: str = "results",
         skip_commercial: bool = False,
         skip_additional: bool = False,
+        skip_advanced: bool = False,
         ip_address: str = None,
         enable_cache: bool = True,
         force_refresh: bool = False
@@ -74,6 +78,7 @@ class FullEnrichmentPipeline:
             output_dir: Directory to save results
             skip_commercial: Skip commercial APIs (Hunter, EmailRep, Clearbit)
             skip_additional: Skip additional sources (WHOIS, IPQS, Twitter, etc)
+            skip_advanced: Skip advanced free sources (HackerNews, Dev.to, NPM, etc) - NEW
             ip_address: Optional IP address for geolocation (free sources)
             enable_cache: Enable Redis caching
             force_refresh: Force refresh (bypass cache)
@@ -82,6 +87,7 @@ class FullEnrichmentPipeline:
         self.output_dir.mkdir(exist_ok=True)
         self.skip_commercial = skip_commercial
         self.skip_additional = skip_additional
+        self.skip_advanced = skip_advanced
         self.ip_address = ip_address
         self.force_refresh = force_refresh
 
@@ -102,6 +108,13 @@ class FullEnrichmentPipeline:
 
         # Free sources - always enabled (100% free)
         self.free_sources = FreeSourcesEnricher(ip_address=ip_address)
+
+        # Advanced free sources - NEW in v5.2 (100% free)
+        if not skip_advanced:
+            self.free_advanced = FreeAdvancedSources
+        else:
+            self.free_advanced = None
+            logger.warning("Advanced free sources disabled")
 
     def enrich_email(self, email: str) -> dict:
         """
@@ -156,7 +169,7 @@ class FullEnrichmentPipeline:
                 logger.info("   ⚡ Using cached additional data")
 
         # Step 4: Free Sources (always enabled - 100% free)
-        logger.info("🆓 Step 4/5: Enriching with free sources...")
+        logger.info("🆓 Step 4/6: Enriching with free sources...")
         free_data = self.cache.get(email, 'free')
         if free_data is None:
             try:
@@ -168,9 +181,25 @@ class FullEnrichmentPipeline:
         else:
             logger.info("   ⚡ Using cached free sources data")
 
-        # Step 5: Feature Engineering
-        logger.info("🔬 Step 5/5: Generating enhanced features...")
-        engineer = EnhancedFeatureEngineer(osint_data, commercial_data, additional_data, free_data)
+        # Step 5: Advanced Free Sources (NEW in v5.2 - 100% free)
+        free_advanced_data = None
+        if not self.skip_advanced and self.free_advanced:
+            logger.info("🚀 Step 5/6: Enriching with advanced free sources (HackerNews, Dev.to, NPM, etc)...")
+            free_advanced_data = self.cache.get(email, 'free_advanced')
+            if free_advanced_data is None:
+                try:
+                    advanced_enricher = self.free_advanced(email)
+                    free_advanced_data = advanced_enricher.enrich()
+                    self.cache.set(email, 'free_advanced', free_advanced_data)
+                except Exception as e:
+                    logger.error(f"Advanced free sources error: {e}")
+                    logger.warning("Continuing without advanced free sources")
+            else:
+                logger.info("   ⚡ Using cached advanced free sources data")
+
+        # Step 6: Feature Engineering
+        logger.info("🔬 Step 6/6: Generating enhanced features...")
+        engineer = EnhancedFeatureEngineer(osint_data, commercial_data, additional_data, free_data, free_advanced_data)
         features = engineer.generate_all_features()
         ml_ready = engineer.to_ml_ready()
 
@@ -184,6 +213,7 @@ class FullEnrichmentPipeline:
                 'commercial': commercial_data if commercial_data else {},
                 'additional': additional_data if additional_data else {},
                 'free_sources': free_data if free_data else {},
+                'free_advanced': free_advanced_data if free_advanced_data else {},
             },
             'features': {
                 'all_features': features.__dict__,
@@ -331,6 +361,11 @@ def main():
         help='Skip additional sources (WHOIS, IPQS, Twitter, etc)'
     )
     parser.add_argument(
+        '--skip-advanced',
+        action='store_true',
+        help='Skip advanced free sources (HackerNews, Dev.to, NPM, PyPI, etc) - NEW'
+    )
+    parser.add_argument(
         '--ip',
         type=str,
         help='IP address for geolocation (free sources)'
@@ -364,6 +399,7 @@ def main():
             output_dir=args.output,
             skip_commercial=args.skip_commercial,
             skip_additional=args.skip_additional,
+            skip_advanced=args.skip_advanced,
             ip_address=args.ip,
             enable_cache=not args.no_cache,
             force_refresh=args.force_refresh
