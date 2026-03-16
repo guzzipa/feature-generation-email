@@ -531,6 +531,57 @@ Email → Enrichment → 291 Features → Feast
 
 ---
 
+## 📊 Interactive Dashboard (NEW in v4.2)
+
+Web-based dashboard for visual email analysis and system monitoring:
+
+```bash
+# Install dashboard dependencies
+pip install streamlit plotly pandas
+
+# Launch dashboard
+streamlit run streamlit_app.py
+```
+
+Opens automatically at `http://localhost:8501`
+
+### Dashboard Features
+
+**Main Page: Email Analysis**
+- Real-time email enrichment with progress indicators
+- Summary metrics with color-coded scores
+- Interactive radar charts
+- Feature breakdown by category (7 tabs)
+- GitHub profile integration
+- Security analysis dashboard
+- JSON export functionality
+
+**System Monitor Page**
+- Redis cache statistics and hit rates
+- Streaming worker metrics and health
+- Job queue monitoring
+- Cache management tools
+- Real-time auto-refresh
+
+**Feature Explorer Page**
+- Browse all 291 features
+- Search and filter capabilities
+- Feature type distribution
+- Use case templates (Fraud, Lead Scoring, Segmentation)
+- Export feature catalog as CSV
+
+### Key Capabilities
+
+- **Email Comparison**: Side-by-side analysis of two emails
+- **History Tracking**: Timeline of analyzed emails with trends
+- **Mobile Responsive**: Works on phones and tablets
+- **Export Options**: JSON, CSV, metrics data
+- **Production Ready**: Docker deployment, Streamlit Cloud compatible
+
+**Full Dashboard Documentation**: [DASHBOARD.md](DASHBOARD.md)
+
+---
+
 ## 🛠️ Roadmap
 
 - ✅ **v1.0**: OSINT core (78 features)
@@ -542,9 +593,10 @@ Email → Enrichment → 291 Features → Feast
 - ✅ **v3.5**: REST API service
 - ✅ **v4.0**: Real-time streaming enrichment
 - ✅ **v4.1**: Feature store integration (Feast)
-- 🔲 Dashboard UI (Streamlit)
+- ✅ **v4.2**: Interactive dashboard (Streamlit)
 - 🔲 GraphQL API
 - 🔲 Webhooks for async notifications
+- 🔲 Mobile app (React Native)
 
 ## 📄 License
 

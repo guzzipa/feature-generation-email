@@ -21,6 +21,11 @@ python-multipart>=0.0.6  # Form data parsing
 # pandas>=2.0.0            # Data manipulation (COMMENTED - conflicts with tts)
 # pyarrow>=14.0.0          # Parquet file support (install with feast)
 
+# ========== Dashboard UI (v4.2 - Streamlit) ==========
+streamlit>=1.28.0        # Interactive web dashboard
+plotly>=5.17.0           # Interactive visualizations
+pandas>=1.5.0            # Data manipulation (required by Streamlit)
+
 # ========== Optional (Production) ==========
 # gunicorn>=21.2.0       # Production WSGI server
 # celery>=5.3.0          # Async batch processing
