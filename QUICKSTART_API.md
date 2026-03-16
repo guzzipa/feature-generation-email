@@ -214,6 +214,7 @@ docker run -p 8000:8000 --env-file .env email-intelligence-api
 ## 📚 Full Documentation
 
 - **API Reference**: [API.md](API.md)
+- **Streaming Guide**: [STREAMING.md](STREAMING.md) - Real-time streaming enrichment (v4.0)
 - **Use Cases**: [USE_CASES.md](USE_CASES.md)
 - **Project Summary**: [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)
 - **Caching Guide**: [REDIS_CACHE.md](REDIS_CACHE.md)

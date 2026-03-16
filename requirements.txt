@@ -6,6 +6,7 @@ dnspython>=2.4.0         # DNS record analysis
 
 # ========== Caching (v3.4 - Recommended for production) ==========
 redis>=5.0.0             # Redis caching layer
+redis[asyncio]>=5.0.0    # Redis async support for streaming (v4.0)
 
 # ========== REST API (v3.5 - API Service) ==========
 fastapi>=0.109.0         # Modern web framework
