@@ -582,6 +582,77 @@ Opens automatically at `http://localhost:8501`
 
 ---
 
+## 🤖 Auto-Improvement System (NEW in v5.0)
+
+**Living System**: Self-maintaining and auto-improving project that discovers new data sources, optimizes performance, and suggests features automatically.
+
+```bash
+# Run auto-improvement tasks
+python auto_improve.py discover    # Find new APIs and data sources
+python auto_improve.py health      # Check system health
+python auto_improve.py optimize    # Get optimization suggestions
+python auto_improve.py analyze     # Discover new features from data
+
+# Start local scheduler (runs tasks automatically)
+python scheduler.py start          # Daemon mode
+python scheduler.py run-now        # Run all tasks immediately
+```
+
+### Automated Capabilities
+
+**🔍 Source Discovery**
+- Searches GitHub for relevant open-source projects (weekly)
+- Discovers new APIs from directories (ProgrammableWeb, RapidAPI)
+- Identifies feature opportunities from new sources
+- Auto-creates GitHub issues with discoveries
+
+**🏥 Health Monitoring**
+- Checks all API endpoints daily
+- Monitors response times and success rates
+- Alerts on degraded or failed APIs
+- Tracks dependency updates
+
+**⚡ Optimization Engine**
+- Analyzes cache performance
+- Suggests code optimizations
+- Identifies performance bottlenecks
+- Recommends architecture improvements
+
+**📊 Feature Analysis**
+- Analyzes enrichment data patterns
+- Suggests new derived features
+- Identifies low-coverage features
+- Proposes feature correlations
+
+### GitHub Actions (Automatic)
+
+Runs every **Monday at 9 AM UTC**:
+
+1. ✅ Discovers new data sources
+2. ✅ Checks API health
+3. ✅ Analyzes performance
+4. ✅ Creates GitHub issues/PRs with findings
+5. ✅ Updates documentation
+
+### Local Scheduler (Manual)
+
+Alternative to GitHub Actions for local development:
+
+```bash
+# Configure schedule
+python scheduler.py start
+
+# Schedule:
+# • Daily 09:00 - Health Check
+# • Monday 09:00 - Source Discovery
+# • Monday 10:00 - Optimization Analysis
+# • Monthly - Feature Analysis
+```
+
+**Full Maintenance Guide**: [MAINTENANCE.md](MAINTENANCE.md)
+
+---
+
 ## 🛠️ Roadmap
 
 - ✅ **v1.0**: OSINT core (78 features)
@@ -594,6 +665,8 @@ Opens automatically at `http://localhost:8501`
 - ✅ **v4.0**: Real-time streaming enrichment
 - ✅ **v4.1**: Feature store integration (Feast)
 - ✅ **v4.2**: Interactive dashboard (Streamlit)
+- ✅ **v5.0**: Auto-improvement system (Living Project)
+- 🔲 AI-powered code improvements (Claude Code integration)
 - 🔲 GraphQL API
 - 🔲 Webhooks for async notifications
 - 🔲 Mobile app (React Native)
