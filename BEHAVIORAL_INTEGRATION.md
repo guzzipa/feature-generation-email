@@ -2,11 +2,11 @@
 
 ## Overview
 
-**Platform behavioral data is THE MOST VALUABLE source for credit scoring:**
+**Platform behavioral data is one of the MOST VALUABLE sources for user profiling:**
 - ✅ **Free** - You already have this data
-- ✅ **Unique** - Impossible to fake
-- ✅ **Predictive** - Real user behavior correlates with creditworthiness
-- ✅ **40+ features** - Rich signal
+- ✅ **Unique** - Impossible to fake or spoof
+- ✅ **Predictive** - Real user behavior patterns are highly informative
+- ✅ **40+ features** - Rich behavioral signals
 
 ---
 
@@ -371,68 +371,70 @@ def enrich_email(self, email: str, user_behavioral_data: dict = None) -> dict:
 
 ---
 
-## 📈 Value for Credit Scoring
+## 📈 Feature Value for ML Applications
 
-| Feature Group | Credit Scoring Value | Why |
-|---------------|---------------------|-----|
-| **Session Consistency** | ⭐⭐⭐⭐⭐ | Regular users = stable lifestyle |
-| **Engagement Rate** | ⭐⭐⭐⭐ | High engagement = serious user |
-| **Geographic Consistency** | ⭐⭐⭐⭐⭐ | Changing countries = red flag |
-| **Device Count** | ⭐⭐⭐ | Too many devices = suspicious |
-| **Form Completion** | ⭐⭐⭐⭐ | Completes forms = serious intent |
-| **Account Age** | ⭐⭐⭐⭐⭐ | Older accounts = more trustworthy |
-| **Temporal Patterns** | ⭐⭐⭐⭐ | Normal hours = employed person |
+| Feature Group | Predictive Value | Use Cases |
+|---------------|------------------|-----------|
+| **Session Consistency** | ⭐⭐⭐⭐⭐ | User engagement, churn prediction, quality scoring |
+| **Engagement Rate** | ⭐⭐⭐⭐ | Conversion modeling, user segmentation, activation |
+| **Geographic Consistency** | ⭐⭐⭐⭐⭐ | Fraud detection, identity verification, security |
+| **Device Count** | ⭐⭐⭐ | Bot detection, multi-account detection, security |
+| **Form Completion** | ⭐⭐⭐⭐ | Intent signals, conversion prediction, UX analysis |
+| **Account Age** | ⭐⭐⭐⭐⭐ | Trust scoring, user lifetime value, segmentation |
+| **Temporal Patterns** | ⭐⭐⭐⭐ | User profiling, engagement optimization, scheduling |
 
 ---
 
-## ⚠️ Red Flags to Watch
+## ⚠️ Anomaly Detection Patterns
 
 ```python
-# EXAMPLE: Automated red flag detection
-def calculate_behavioral_risk(features: dict) -> dict:
-    """Calculate risk based on behavioral patterns."""
+# EXAMPLE: Automated anomaly detection
+def detect_behavioral_anomalies(features: dict) -> dict:
+    """Detect unusual patterns in behavioral data."""
 
-    risk_flags = []
+    anomaly_flags = []
 
-    # Too many IP changes
+    # Multiple country changes (suspicious mobility)
     if features.get('ip_country_changes', 0) > 2:
-        risk_flags.append("MULTIPLE_COUNTRIES")
+        anomaly_flags.append("GEOGRAPHIC_ANOMALY")
 
-    # Very short session durations
+    # Very short session durations (possible bot)
     if features.get('session_duration_avg_seconds', 0) < 30:
-        risk_flags.append("SHORT_SESSIONS")
+        anomaly_flags.append("SHORT_SESSIONS")
 
-    # Too many devices
+    # Too many devices (possible account sharing/fraud)
     if features.get('unique_devices_count', 0) > 5:
-        risk_flags.append("MANY_DEVICES")
+        anomaly_flags.append("MANY_DEVICES")
 
-    # Low engagement
+    # Low engagement (inactive user)
     if features.get('engagement_rate', 0) < 0.1:
-        risk_flags.append("LOW_ENGAGEMENT")
+        anomaly_flags.append("LOW_ENGAGEMENT")
 
-    # Inconsistent activity
+    # Inconsistent activity (sporadic usage)
     if features.get('sessions_consistency_score', 0) < 0.3:
-        risk_flags.append("SPORADIC_ACTIVITY")
+        anomaly_flags.append("SPORADIC_ACTIVITY")
 
-    # High night activity (bots?)
+    # High night activity (unusual hours, possible bot)
     if features.get('night_activity_ratio', 0) > 0.5:
-        risk_flags.append("UNUSUAL_HOURS")
+        anomaly_flags.append("UNUSUAL_HOURS")
 
     return {
-        'risk_flags': risk_flags,
-        'risk_count': len(risk_flags),
-        'behavioral_risk_score': len(risk_flags) / 6.0  # 0-1 scale
+        'anomaly_flags': anomaly_flags,
+        'anomaly_count': len(anomaly_flags),
+        'anomaly_score': len(anomaly_flags) / 6.0  # 0-1 scale
     }
 ```
 
 ---
 
-## 💡 Pro Tips
+## 💡 Best Practices
 
-1. **Cache behavioral features**: Recalculate only weekly, not per request
-2. **Track changes over time**: Sudden pattern changes = red flag
-3. **Combine with email features**: Behavioral + OSINT = powerful signal
-4. **Use for continuous monitoring**: Not just at signup
+1. **Cache behavioral features**: Recalculate daily/weekly, not per request
+2. **Track changes over time**: Sudden pattern changes indicate important events
+3. **Combine with OSINT**: Behavioral + email intelligence = comprehensive profiling
+4. **Use for continuous monitoring**: Ongoing analysis, not just one-time enrichment
+5. **Respect privacy**: Anonymize/hash identifiers, comply with GDPR/CCPA
+6. **Monitor data quality**: Track missing values, outliers, and data freshness
 
 ---
 
@@ -444,23 +446,26 @@ python platform_behavioral.py test@example.com
 
 # Test with real data (create integration script)
 python your_integration_script.py user@example.com
+
+# View extracted features
+cat behavioral_test_at_example.com.json | jq '.sessions_total, .engagement_rate'
 ```
 
 ---
 
 ## 📝 Next Steps
 
-1. Identify which analytics/database you use
-2. Write SQL queries or API calls to fetch the data
-3. Format into the structure shown in `create_sample_user_data()`
-4. Integrate into your enrichment pipeline
-5. Train model with behavioral features included
+1. **Identify your data source** - Database (PostgreSQL/MySQL) or Analytics (Mixpanel/GA)
+2. **Write integration code** - SQL queries or API calls to fetch user data
+3. **Test with sample users** - Verify data structure matches expected format
+4. **Integrate into pipeline** - Add to full_enrichment.py or use standalone
+5. **Use in ML models** - Train with behavioral features for better predictions
 
-**This will likely be your HIGHEST-VALUE feature source for credit scoring!**
+**Behavioral data is unique, free, and highly predictive - essential for quality user profiling!**
 
 ---
 
-**Version:** 3.3.0
-**Cost:** $0 (uses your existing data)
-**Setup Time:** 1-2 hours
-**Value:** ⭐⭐⭐⭐⭐ CRITICAL
+**Version:** 3.4.0
+**Cost:** $0 (uses your existing platform data)
+**Setup Time:** 1-2 hours (database/analytics integration)
+**Value:** ⭐⭐⭐⭐⭐ HIGHLY RECOMMENDED

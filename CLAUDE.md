@@ -1,20 +1,24 @@
-# Feature Generation from Email
+# Email Intelligence & Feature Extraction
 
-## Descripción del Proyecto
+## Project Description
 
-Sistema de generación de features para ML usando emails de usuarios como punto de partida. Combina datos públicos (OSINT) y APIs comerciales especializadas para obtener información estructurada que mejore modelos de scoring, predicción de riesgo y personalización.
+Email intelligence system that extracts 291+ structured features from email addresses. Combines public data (OSINT), commercial APIs, and behavioral analysis to generate comprehensive user profiles for ML applications, user research, identity verification, and data enrichment.
 
-## Estructura del Proyecto
+## Project Structure
 
 ```
 feature-generation-email/
-├── CLAUDE.md                       # Este archivo - contexto del proyecto
-├── osint_email_enrichment.py       # Recolección de datos públicos
-├── commercial_apis.py              # Integración APIs comerciales
-├── advanced_feature_engineering.py # Feature engineering (103+ features)
-├── requirements.txt                # Dependencias Python
-├── .env.example                    # Template de variables de entorno
-└── examples/                       # Ejemplos de uso y resultados
+├── full_enrichment.py              # Main enrichment pipeline (v3.4)
+├── osint_email_enrichment.py       # OSINT data collection (GitHub, Gravatar, HIBP)
+├── commercial_apis.py              # Commercial API integration (Hunter, EmailRep, Clearbit)
+├── additional_sources.py           # Extra sources (WHOIS, IPQS, Twitter, etc)
+├── free_sources.py                 # 100% free sources (IP intel, patterns, username search)
+├── platform_behavioral.py          # Platform behavioral data extraction
+├── enhanced_feature_engineering.py # Feature engineering (291 features)
+├── cache_manager.py                # Redis caching layer
+├── requirements.txt                # Python dependencies
+├── .env                            # Environment variables (not committed)
+└── examples/                       # Usage examples
 ```
 
 ## Fuentes de Datos
@@ -36,14 +40,17 @@ feature-generation-email/
 - Lookup de redes sociales (LinkedIn, Twitter vía scraping)
 - Domain WHOIS age analysis
 
-## Features Generados
+## Features Generated
 
-El sistema genera un vector de features que incluye:
+The system generates 291 features across multiple categories:
 
-- **Validación**: `email_valid`, `is_free_email`, `is_corporate_email`, `is_disposable_email`
-- **Presencia Online**: `has_gravatar`, `has_github`, `github_public_repos`, `github_followers`
-- **Seguridad**: `breach_count`, `has_breaches`
-- **Scores Derivados**: `online_presence_score`, `trust_score`
+- **Identity & Validation** (45): Email format, provider, domain analysis, name extraction, professional patterns
+- **Social & Professional** (60): GitHub activity, social presence, bio/location/company, reputation signals
+- **Security & Quality** (35): Data breaches, disposable detection, spam flags, IP reputation
+- **Behavioral Patterns** (40): Session patterns, engagement metrics, device fingerprinting, temporal activity
+- **Technical & Geo** (30): IP geolocation, browser/OS/device, domain WHOIS, connection type
+- **Derived Scores** (25): Trust score, identity strength, security risk, engagement, data quality
+- **Commercial APIs** (56): Hunter verification, EmailRep reputation, Clearbit enrichment (optional)
 
 ## Consideraciones de Producción
 
@@ -114,19 +121,27 @@ MAX_RETRIES=3          # Reintentos en caso de fallo
 REQUEST_TIMEOUT=10     # Timeout de requests en segundos
 ```
 
-## Uso
+## Usage
 
 ```bash
-# Análisis individual
-python osint_email_enrichment.py usuario@ejemplo.com
+# Single email enrichment
+python full_enrichment.py user@example.com
 
-# Batch processing (por implementar)
-python batch_enrichment.py --input usuarios.csv --output features.json
+# With IP geolocation
+python full_enrichment.py user@example.com --ip 181.45.123.45
+
+# Skip commercial APIs (100% free)
+python full_enrichment.py user@example.com --skip-commercial
+
+# Force refresh (bypass cache)
+python full_enrichment.py user@example.com --force-refresh
 ```
 
-## Notas Adicionales
+## Production Recommendations
 
-- El proyecto está en fase de POC/evaluación
-- Los resultados se guardan en JSON para análisis
-- Considerar costos de APIs pagas antes de escalar
-- Algunas APIs públicas pueden cambiar sin previo aviso
+- **Enable Redis caching** for performance (2-10x speedup)
+- **Use batch processing** for multiple emails
+- **Monitor API rate limits** (especially free tiers)
+- **Implement retry logic** with exponential backoff
+- **Consider costs** before scaling commercial APIs
+- **Respect privacy** and comply with GDPR/CCPA
