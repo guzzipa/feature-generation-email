@@ -1,8 +1,9 @@
 # 📊 Email Intelligence System - Complete Feature Breakdown
 
-## 🎯 Project Status: v3.4 - Production Ready
+## 🎯 Project Status: v3.5 - Production Ready + REST API
 
 **Total Features Available: 291**
+**Deployment Options**: CLI, Python Library, REST API
 
 ---
 
@@ -392,16 +393,39 @@ With **204 free features** (OSINT + IPQS + Free Sources + Behavioral):
 
 ## 🎉 Project Status
 
-**Status:** ✅ Production Ready (v3.4)
+**Status:** ✅ Production Ready (v3.5)
 **Total Features:** 291 (204 free + 40 behavioral + 47 optional commercial)
 **Cost:** $0-150/month (depending on configuration)
 **Performance:** 2-10x faster with Redis caching
+**Deployment:** CLI, Python Library, REST API (NEW)
 **Use Cases:** User profiling, identity verification, fraud detection, lead scoring, ML training
 
 **Repository:** [https://github.com/guzzipa/feature-generation-email](https://github.com/guzzipa/feature-generation-email)
 
 ---
 
-**Version:** 3.4.0
+## 🚀 Deployment Options
+
+### 1. Command Line Interface
+```bash
+python full_enrichment.py user@example.com
+```
+
+### 2. Python Library
+```python
+from full_enrichment import FullEnrichmentPipeline
+pipeline = FullEnrichmentPipeline()
+results = pipeline.enrich_email('user@example.com')
+```
+
+### 3. REST API Service (NEW in v3.5)
+```bash
+uvicorn api:app --host 0.0.0.0 --port 8000 --workers 4
+```
+**API Documentation**: http://localhost:8000/docs
+
+---
+
+**Version:** 3.5.0
 **Last Updated:** 2026-03-16
 **License:** MIT

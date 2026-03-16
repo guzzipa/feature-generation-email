@@ -6,7 +6,7 @@
 
 Comprehensive email intelligence system that extracts 291+ structured features from email addresses using OSINT data, commercial APIs, and behavioral analysis. Turn an email into rich, actionable data for ML models.
 
-> ⚡ **v3.4**: 291 features from 11+ data sources with Redis caching
+> ⚡ **v3.5**: 291 features from 11+ data sources with Redis caching + REST API service
 
 ## 🎯 What It Does
 
@@ -415,6 +415,35 @@ The system automatically detects:
 - [BEHAVIORAL_INTEGRATION.md](BEHAVIORAL_INTEGRATION.md) - Platform behavioral data integration
 - [ADDITIONAL_SOURCES.md](ADDITIONAL_SOURCES.md) - Extra data sources guide
 
+## 🌐 REST API Service (NEW in v3.5)
+
+Deploy as HTTP API service for easy integration:
+
+```bash
+# Start API server
+uvicorn api:app --reload --port 8000
+
+# Visit http://localhost:8000/docs for interactive API documentation
+```
+
+### API Examples
+
+```bash
+# Enrich email via REST API
+curl -X POST http://localhost:8000/enrich \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com"}'
+
+# Batch enrichment (up to 100 emails)
+curl -X POST http://localhost:8000/enrich/batch \
+  -H "Content-Type: application/json" \
+  -d '{"emails": ["user1@example.com", "user2@example.com"]}'
+```
+
+**Full API Documentation**: [API.md](API.md)
+
+---
+
 ## 🛠️ Roadmap
 
 - ✅ **v1.0**: OSINT core (78 features)
@@ -423,7 +452,7 @@ The system automatically detects:
 - ✅ **v3.2**: Free sources (IP Intel, patterns, username search)
 - ✅ **v3.3**: Platform behavioral data (40 features)
 - ✅ **v3.4**: Redis caching layer
-- 🔲 **v3.5**: REST API service
+- ✅ **v3.5**: REST API service
 - 🔲 **v4.0**: Real-time streaming enrichment
 - 🔲 Feature store integration (Feast, Tecton)
 - 🔲 Dashboard UI (Streamlit)
