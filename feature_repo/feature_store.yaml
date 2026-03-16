@@ -1,0 +1,9 @@
+project: email_intelligence
+registry: data/registry.db
+provider: local
+online_store:
+  type: redis
+  connection_string: localhost:6379
+offline_store:
+  path: data/
+entity_key_serialization_version: 2

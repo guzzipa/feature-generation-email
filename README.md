@@ -485,6 +485,52 @@ Producer → Redis Stream → Consumer Group → Workers → Results
 
 ---
 
+## 🎯 Feast Feature Store Integration (NEW in v4.1)
+
+Push enriched features to [Feast](https://feast.dev/) for ML model training and real-time serving:
+
+```bash
+# Initialize Feast repository
+cd feature_repo && feast apply
+
+# Enrich and push to Feast
+python feast_integration.py push user@example.com
+
+# Get online features for real-time prediction
+python feast_integration.py get user@example.com
+```
+
+### Architecture
+
+```
+Email → Enrichment → 291 Features → Feast
+                                      ├─ Online Store (Redis)
+                                      └─ Offline Store (Parquet)
+                                           ↓
+                              ML Training & Real-Time Serving
+```
+
+### Key Features
+
+- **7 Feature Views**: Identity, Social, Security, Behavioral, Technical, Commercial, Derived
+- **Online Serving**: Low-latency feature retrieval for predictions (< 10ms)
+- **Offline Training**: Point-in-time correct historical features
+- **Smart TTLs**: 1-90 days based on feature stability
+- **Feature Versioning**: Track lineage and changes
+- **ML Framework Integration**: Works with scikit-learn, PyTorch, TensorFlow
+
+### Use Cases
+
+- Train fraud detection models with historical features
+- Real-time lead scoring with online features
+- A/B testing with feature flags
+- Point-in-time correct training datasets
+- Feature reuse across ML models
+
+**Full Feast Documentation**: [FEAST.md](FEAST.md)
+
+---
+
 ## 🛠️ Roadmap
 
 - ✅ **v1.0**: OSINT core (78 features)
@@ -495,8 +541,10 @@ Producer → Redis Stream → Consumer Group → Workers → Results
 - ✅ **v3.4**: Redis caching layer
 - ✅ **v3.5**: REST API service
 - ✅ **v4.0**: Real-time streaming enrichment
-- 🔲 Feature store integration (Feast, Tecton)
+- ✅ **v4.1**: Feature store integration (Feast)
 - 🔲 Dashboard UI (Streamlit)
+- 🔲 GraphQL API
+- 🔲 Webhooks for async notifications
 
 ## 📄 License
 
